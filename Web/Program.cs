@@ -1,7 +1,39 @@
+using Core;
+using Business;
+using System.Data;
+using System;
+using Core.Data;
+using Microsoft.AspNetCore.Identity;
+using Core.Infrastructure.Authentication;
+using Core.Options;
+using System.Configuration;
+using Web;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var emailSettings = builder.Configuration.GetSection(EmailOptions.Email).Get<EmailOptions>();
+
+builder.Services.AddBusinessServices();
+builder.Services.AddCoreServices(builder.Configuration, emailSettings);
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
+{
+    config.SignIn.RequireConfirmedEmail = true;
+    config.User.RequireUniqueEmail = true;
+    config.Password.RequireDigit = builder.Configuration.GetValue<bool>("Security:Password:RequireDigit");
+    config.Password.RequiredLength = builder.Configuration.GetValue<int>("Security:Password:RequiredLength");
+    config.Password.RequiredUniqueChars = builder.Configuration.GetValue<int>("Security:Password:RequiredUniqueChars");
+    config.Password.RequireLowercase = builder.Configuration.GetValue<bool>("Security:Password:RequireLowercase");
+    config.Password.RequireUppercase = builder.Configuration.GetValue<bool>("Security:Password:RequireUppercase");
+    config.Password.RequireNonAlphanumeric = builder.Configuration.GetValue<bool>("Security:Password:RequireNonAlphanumeric");
+
+    config.Lockout.MaxFailedAccessAttempts = builder.Configuration.GetValue<int>("Security:Lockout:MaxFailedAccessAttempts");
+    config.Lockout.DefaultLockoutTimeSpan = builder.Configuration.GetValue<TimeSpan>("Security:Lockout:DefaultLockoutTimeSpan");
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -21,7 +53,13 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.SeedIdentity();
 
 app.Run();

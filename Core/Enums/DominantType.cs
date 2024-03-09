@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Infrastructure.Base.Abstract;
-public interface IAuditableEntity
+namespace Core.Enums;
+public enum DominantType
 {
-    DateTime DateCreated { get; }
+    Strict = 0,
+    Leinent = 0
 }

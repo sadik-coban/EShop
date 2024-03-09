@@ -1,4 +1,4 @@
-﻿using Core.Infrastructure.Base;
+﻿using Core.Infrastructure.Base.EntitiesBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,6 @@ public class Comment : AuditableEntity
     public Guid ProductId { get; set; }
     public int Rate { get; set; }
     public string Body { get; set; } = string.Empty;
-    public ICollection<CommentImage> CommentImages { get; set; } = new HashSet<CommentImage>();
+    public ICollection<CommentImage>? CommentImages { get; set; } = new HashSet<CommentImage>();
     public Product Product { get; set; } = null!;
 }
-

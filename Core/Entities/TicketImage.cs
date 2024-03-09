@@ -1,9 +1,4 @@
-﻿using Core.Infrastructure.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Infrastructure.Base.EntitiesBase;
 
 namespace Core.Entities;
 public class TicketImage : Entity

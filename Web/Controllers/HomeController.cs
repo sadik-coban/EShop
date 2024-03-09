@@ -1,4 +1,3 @@
-using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Web.Models;
@@ -11,7 +10,7 @@ public class HomeController : Controller
     public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
-    }
+    } 
 
     public IActionResult Index()
     {

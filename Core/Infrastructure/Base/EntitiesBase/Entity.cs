@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Infrastructure.Base;
+namespace Core.Infrastructure.Base.EntitiesBase;
 public abstract class Entity
 {
     public Guid Id { get; set; }

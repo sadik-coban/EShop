@@ -1,14 +1,9 @@
-﻿using Core.Infrastructure.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Infrastructure.Base.EntitiesBase;
 
 namespace Core.Entities;
-public class CommentImage : AuditableEntity
+public class CommentImage : Entity
 {
-    public Guid ProductId { get; set; }
+    public Guid CommentId { get; set; }
     public string Image { get; set; } = string.Empty;
-    public Product Product { get; set; } = null!;
+    public Comment Comment { get; set; } = null!;
 }
