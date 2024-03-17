@@ -36,7 +36,7 @@ public static class AppExtensions
             EmailConfirmed = true
         };
 
-        userManager.CreateAsync(user, configuration.GetValue<string>("Security:DefaultUser:Password")).Wait(); ;
+        userManager.CreateAsync(user, configuration.GetValue<string>("Security:DefaultUser:Password")).Wait();
         userManager.AddToRoleAsync(user, "Administrators").Wait();
         var claimResult = userManager.AddClaimAsync(user, new Claim(ClaimTypes.GivenName, configuration.GetValue<string>("Security:DefaultUser:Name"))).Result;
 

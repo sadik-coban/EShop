@@ -1,11 +1,12 @@
 ﻿using Core.Data;
+using Core.Infrastructure.Base.EntitiesBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 using X.PagedList;
 
 namespace Core.Infrastructure.Base.RepositoriesBase;
-public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepositoryBase<TEntity> where TEntity : class
+public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepositoryBase<TEntity> where TEntity : AuditableEntity
 {
     protected IQueryable<TEntity> Query => context.Set<TEntity>().AsNoTracking();
 
@@ -42,13 +43,13 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
     public async Task<IPagedList<TEntity>> GetListAsync(
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false)
     {
         var query = Query;
-        GetListBase(predicate, includedProperties, withDeleted, orderBy, query);
+        query = GetListBase(predicate, include, withDeleted, orderBy, query);
         return await query.ToPagedListAsync(pageNumber, pageSize);
     }
 
@@ -56,13 +57,13 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
         Func<IQueryable<TEntity>, IQueryable<TResult>> select,
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false)
     {
         var query = Query;
-        GetListBase(predicate, includedProperties, withDeleted, orderBy, query);
+        query = GetListBase(predicate, include, withDeleted, orderBy, query);
         return await select(query).ToPagedListAsync(pageNumber, pageSize);
     }
 
@@ -71,24 +72,24 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
         Func<TEntity, TResult> selector,
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false)
     {
         var query = Query;
-        GetListBase(predicate, includedProperties, withDeleted, orderBy, query);
+        query = GetListBase(predicate, include, withDeleted, orderBy, query);
         return await query.Select(selector).ToPagedListAsync(pageNumber, pageSize);
     }
 
     public async Task<TEntity> GetAsync(
         Expression<Func<TEntity, bool>> predicate,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default)
     {
         var query = Query;
-        GetBase(includedProperties, withDeleted, query);
+        query = GetBase(include, withDeleted, query);
         TEntity result = await query.FirstOrDefaultAsync(predicate, cancellationToken) ?? throw new ArgumentNullException(nameof(result), $"The {nameof(TEntity).ToLower()} does not exists");
         return result;
     }
@@ -97,12 +98,12 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
     public async Task<TResult> GetAsync<TResult>(
         Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IQueryable<TResult>> select,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default)
     {
         var query = Query;
-        GetBase(includedProperties, withDeleted, query);
+        query = GetBase(include, withDeleted, query);
         query = query.Where(predicate);
         TResult result = await select(query).FirstOrDefaultAsync(cancellationToken) ?? throw new ArgumentNullException(nameof(result), $"The {nameof(TEntity).ToLower()} does not exists");
         return result;
@@ -111,39 +112,34 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
     public async Task<TResult> GetAsync<TResult>(
         Expression<Func<TEntity, bool>> predicate,
         Func<TEntity, TResult> selector,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default)
     {
         var query = Query;
-        GetBase(includedProperties, withDeleted, query);
+        query = GetBase(include, withDeleted, query);
         query = query.Where(predicate);
         TResult result = await ((IQueryable<TResult>)query.Select(selector)).FirstOrDefaultAsync() ?? throw new ArgumentNullException(nameof(result), $"The {nameof(TEntity).ToLower()} does not exists");
         return result;
     }
 
-    private void GetBase(string[]? includedProperties, bool withDeleted, IQueryable<TEntity> query)
+    private IQueryable<TEntity> GetBase(Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include, bool withDeleted, IQueryable<TEntity> query)
     {
-        if (includedProperties != null)
+        if (include != null)
         {
-            foreach (var includedProperty in includedProperties)
-            {
-                query = query.Include(includedProperty);
-            }
+            query = include(query);
         }
         if (withDeleted)
         {
             query = query.IgnoreQueryFilters();
         }
+        return query;
     }
-    private void GetListBase(Expression<Func<TEntity, bool>>? predicate, string[]? includedProperties, bool withDeleted, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy, IQueryable<TEntity> query)
+    private IQueryable<TEntity> GetListBase(Expression<Func<TEntity, bool>>? predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include, bool withDeleted, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy, IQueryable<TEntity> query)
     {
-        if (includedProperties != null)
+        if (include != null)
         {
-            foreach (var includedProperty in includedProperties)
-            {
-                query = query.Include(includedProperty);
-            }
+            query = include(query);
         }
         if (withDeleted)
         {
@@ -157,6 +153,7 @@ public class RepositoryBase<TEntity>(ApplicationDbContext context) : IRepository
         {
             query = orderBy(query);
         }
+        return query;
     }
 }
 

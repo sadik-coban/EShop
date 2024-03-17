@@ -1,4 +1,5 @@
 ﻿using Business.Features.Catalogs.Enums;
+using Core.Data;
 using Core.Entities;
 using Core.Extensions;
 using Core.Infrastructure.Base.RepositoriesBase;
@@ -7,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Business.Features.Catalogs;
 public class CatalogsService(IRepositoryBase<Catalog> catalogsRepository) : ICatalogsService
 {
-    public async Task<IEnumerable<Catalog>> GetCatalogListAsync(string? keywords = null, bool withDeleted = false, bool withDisabled = true, OrderByCatalog orderBy = OrderByCatalog.DateDescending)
+    public async Task<IEnumerable<Catalog>> GetCatalogListAsync(string? keywords = null, bool withDeleted = false, bool withDisabled = true, OrderByCatalog orderBy = OrderByCatalog.DateDescending,int pageNumber = 1, int pageSize = 10)
     {
         Expression<Func<Catalog, bool>>? predicate = null;
         Func<IQueryable<Catalog>, IOrderedQueryable<Catalog>>? orderByFunc;
@@ -51,7 +53,7 @@ public class CatalogsService(IRepositoryBase<Catalog> catalogsRepository) : ICat
                 predicate = predicate.AndAlso(predicateDisabled);
             }
         }
-        return await catalogsRepository.GetListAsync(predicate, orderByFunc, ["Manager"],1,10,withDeleted);
+        return await catalogsRepository.GetListAsync(predicate, orderByFunc, q => q.Include(p => p.User), pageNumber, pageSize, withDeleted);
     }
     public async Task<Catalog> GetCatalogById(Guid id, bool withDeleted = false, bool withDisabled = true)
     {

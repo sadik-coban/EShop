@@ -43,4 +43,4 @@ public class CatalogsRepository(ApplicationDbContext context) : RepositoryBase<C
 }
 
 
-// Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+// Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,

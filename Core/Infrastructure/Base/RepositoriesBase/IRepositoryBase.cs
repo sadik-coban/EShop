@@ -13,7 +13,7 @@ public interface IRepositoryBase<TEntity>
     Task<IPagedList<TEntity>> GetListAsync(
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false);
@@ -22,7 +22,7 @@ public interface IRepositoryBase<TEntity>
         Func<IQueryable<TEntity>, IQueryable<TResult>> select,
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false);
@@ -32,14 +32,14 @@ public interface IRepositoryBase<TEntity>
         Func<TEntity, TResult> selector,
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         int pageNumber = 1,
         int pageSize = 10,
         bool withDeleted = false);
 
     Task<TEntity> GetAsync(
         Expression<Func<TEntity, bool>> predicate,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default);
 
@@ -47,14 +47,14 @@ public interface IRepositoryBase<TEntity>
     Task<TResult> GetAsync<TResult>(
         Expression<Func<TEntity, bool>> predicate,
         Func<IQueryable<TEntity>, IQueryable<TResult>> select,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default);
 
     Task<TResult> GetAsync<TResult>(
         Expression<Func<TEntity, bool>> predicate,
         Func<TEntity, TResult> selector,
-        string[]? includedProperties = null,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
         bool withDeleted = false,
         CancellationToken cancellationToken = default);
 }

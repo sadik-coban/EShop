@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Business.Features.Catalogs;
 public interface ICatalogsService
 {
-    Task<IEnumerable<Catalog>> GetCatalogListAsync(string? keywords = null, bool withDeleted = false, bool withDisabled = true, OrderByCatalog orderBy = OrderByCatalog.DateDescending);
+    Task<IEnumerable<Catalog>> GetCatalogListAsync(string? keywords = null, bool withDeleted = false, bool withDisabled = true, OrderByCatalog orderBy = OrderByCatalog.DateDescending, int pageNumber = 1, int pageSize = 10);
     Task<Catalog> GetCatalogById(Guid id, bool withDeleted = false, bool withDisabled = true);
     Task<int> CreateCatalogAsync(Catalog entity);
     Task<int> UpdateCatalogAsync(string name);

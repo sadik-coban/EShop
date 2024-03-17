@@ -1,18 +1,23 @@
-﻿using Azure;
-using Business.Features.Catalogs;
+﻿using Business.Features.Catalogs;
+using Business.Features.Catalogs.Enums;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-
 namespace Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 public class CatalogsController(ICatalogsService catalogsService) : BaseController
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? pageNumber, int? pageSize,string? keywords)
     {
-        var list = await catalogsService.GetCatalogListAsync();
+        IEnumerable<Catalog> list;
+        if(pageNumber == null || pageSize == null)
+        {
+            list = await catalogsService.GetCatalogListAsync(keywords,orderBy: OrderByCatalog.DateAscending);
+        }
+        else
+        {
+            list = await catalogsService.GetCatalogListAsync(keywords,orderBy: OrderByCatalog.DateAscending, pageNumber: pageNumber!.Value, pageSize: pageSize!.Value);
+        }
         return View(list);
     }
 
